@@ -1,0 +1,146 @@
+
+import pandas as pd
+import numpy as np
+
+
+RAW_PATH = "winemag-data-130k-v2.csv"   # Input Kaggle info
+CLEAN_PATH = "wine_clean.csv"           # Output clean file
+MIN_DESCRIPTION_WORDS = 8               # tasting notes shorter than this get dropped
+
+
+def load_data(path: str) -> pd.DataFrame:
+    df = pd.read_csv(path, index_col=0) # first column is just numbers
+
+    print(f"Loading in: {len(df):,} rows, {df.shape[0]} columns") #start row/col
+    return df
+
+
+def drop_duplicates(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Removes rows that are duplicates of each other, based on the tasting
+    note text. If two rows have the exact same description, they're
+    almost certainly the same wine entered twice.
+    """
+    before = len(df)  # remember the row count so we can report how many we removed
+
+    # subset=["description"] means: only look at this column to decide
+    # if two rows count as duplicates.
+    df = df.drop_duplicates(subset=["description"])
+
+    print(f"Dropped {before - len(df):,} duplicate rows")
+    return df
+
+
+def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+    required_columns = ["description", "variety", "points"]
+    before = len(df)
+
+    # dropna() removes rows with missing values. subset= limits it to
+    # only checking the columns we listed above.
+    df = df.dropna(subset=required_columns)
+    print(f"Dropped {before - len(df):,} rows missing required fields {required_columns}")
+
+    # Fill in other columns
+    df["region_1"] = df["region_1"].fillna("Unknown")
+    df["country"] = df["country"].fillna("Unknown")
+    df["designation"] = df["designation"].fillna("")
+
+    # For price, a placeholder like "Unknown" wouldn't make sense since
+    # it's a number. Instead we fill missing prices with the median
+    # (the middle value) of all known prices — a reasonable stand-in.
+    df["price"] = df["price"].fillna(df["price"].median())
+
+    return df
+
+
+def standardize_text_fields(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Cleans up inconsistent text — extra whitespace, and near-duplicate
+    names that should really be treated as the same value.
+    """
+    # .str lets you apply string operations to an entire column at once.
+    # .strip() removes leading/trailing whitespace, which sneaks into
+    # real-world data more often than you'd expect.
+    for column in ["variety", "country", "region_1", "winery"]:
+        df[column] = df[column].astype(str).str.strip()
+
+    # A dictionary (the {key: value} structure below) maps a "wrong"
+    # value to the "correct" one we want to replace it with. This is a
+    # placeholder example — once you've looked at your actual data
+    # (try: df["variety"].value_counts()) you'll likely find more
+    # inconsistent names worth adding here.
+    variety_fixes = {
+        "Pinot Noir-Syrah": "Pinot Noir",
+    }
+    df["variety"] = df["variety"].replace(variety_fixes)
+
+    return df
+
+
+def filter_short_descriptions(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Drops wines whose tasting notes are too short to be useful later,
+    when we build the similarity engine from this text.
+    """
+    # .str.split() breaks each description into a list of words,
+    # .str.len() then counts how many words are in that list.
+    word_counts = df["description"].str.split().str.len()
+
+    before = len(df)
+
+    # This is a "boolean mask" — word_counts >= MIN... produces a column
+    # of True/False values, and df[...] keeps only the rows where it's True.
+    df = df[word_counts >= MIN_DESCRIPTION_WORDS]
+
+    print(f"Dropped {before - len(df):,} rows with tasting notes under {MIN_DESCRIPTION_WORDS} words")
+    return df
+
+
+def add_derived_fields(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Creates a new column that doesn't exist in the raw data, but is
+    useful for us — a rough price category. This isn't needed for the
+    machine learning part, but will be handy later for filtering wines
+    in the app's interface.
+    """
+    # pd.cut() sorts numeric values into named "bins" (ranges). Here,
+    # a $12 wine falls in the first bin and gets labeled "budget", etc.
+    df["price_tier"] = pd.cut(
+        df["price"],
+        bins=[0, 15, 30, 60, 100, np.inf],  # np.inf means "no upper limit"
+        labels=["budget", "everyday", "premium", "splurge", "luxury"],
+    )
+    return df
+
+
+def main():
+    """
+    This function runs the whole pipeline, one step at a time, in order.
+    Keeping this separate from the individual functions above makes it
+    easy to see the overall flow at a glance.
+    """
+    df = load_data(RAW_PATH)
+    df = drop_duplicates(df)
+    df = handle_missing_values(df)
+    df = standardize_text_fields(df)
+    df = filter_short_descriptions(df)
+    df = add_derived_fields(df)
+
+    # After all the filtering above, the row numbers ("index") have gaps
+    # in them. reset_index() renumbers them cleanly from 0.
+    df = df.reset_index(drop=True)
+
+    # Save our cleaned data to a new CSV file, so we don't have to redo
+    # all this cleaning every time we work on the project.
+    df.to_csv(CLEAN_PATH, index=False)
+
+    print(f"\nSaved {len(df):,} cleaned rows to {CLEAN_PATH}")
+    print(f"\nColumns: {list(df.columns)}")
+    print(f"\nSample:\n{df[['title', 'variety', 'description']].head(3)}")
+
+
+# This is a common Python pattern. It means: "only run main() if this
+# file is being run directly (not imported by another script)." It's
+# good practice even though, for now, you'll only ever run this directly.
+if __name__ == "__main__":
+    main()
