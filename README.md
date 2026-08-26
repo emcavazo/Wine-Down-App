@@ -5,7 +5,7 @@ A data science project that recommends wines based on wine attributes such as de
 ## Motivation
 
 I work as a server and wanted to build something that could help recommend 
-wines to customers based on their preferences and in turn, provide an idea of what meal to enjoy with their wine.
+wines to customers based on their preferences and in turn, give them a better scope of what they might enjoy next
 
 ## Status
 
