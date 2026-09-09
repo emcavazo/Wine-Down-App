@@ -12,7 +12,7 @@ wines to customers based on their preferences and in turn, give them a better sc
 🚧 Work in progress
 
 - [x] Load and clean the dataset
-- [ ] Exploratory data analysis
+- [x] Exploratory data analysis
 - [ ] Build recommendation logic
 - [ ] Evaluate results
 - [ ] (Optional) Build a simple interface
