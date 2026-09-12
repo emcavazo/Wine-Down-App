@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 
 from sentence_transformers import SentenceTransformer
 from sklearn.neighbors import NearestNeighbors
