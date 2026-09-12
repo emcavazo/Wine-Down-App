@@ -33,7 +33,7 @@ Dataset: Kaggle Wine Reviews: https://www.kaggle.com/datasets/zynicide/wine-revi
    (First run will generate `wine_embeddings.npy` automatically — this will
    take a few minutes)
 
-### Running with Docker 
+## Running with Docker 
   docker build -t wine-api .
   docker run -p 5000:5000 wine-api
 
