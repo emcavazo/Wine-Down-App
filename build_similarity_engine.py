@@ -47,7 +47,7 @@ def nni(embeddings: np.ndarray) -> NearestNeighbors:
     return index
 
 
-def find_similar_wines(df: pd.DataFrame, index: NearestNeighbors, embeddings: np.ndarray, wine_title: str, top_n: int = DEMO_TOP_N,) -> pd.DataFrame:
+def find_similar_wines(df: pd.DataFrame, index: NearestNeighbors, embeddings: np.ndarray, wine_title: str, top_n: int = TOP_N,) -> pd.DataFrame:
     matches = df.index[df["title"] == wine_title] #find wine within df where true 
 
     if len(matches) == 0:
@@ -57,7 +57,7 @@ def find_similar_wines(df: pd.DataFrame, index: NearestNeighbors, embeddings: np
 
     #find the similars
     query_vector = embeddings[row_position].reshape(1, -1) 
-    distances, neighbor_positions = index.kneighbors(query_vector, n_neighbors=top_n + 1)
+    distances, neighbor_positions = index.kneighbors(query_vector, n_neighbors=TOP_N + 1)
 
     #pull out the actual nums
     distances = distances[0]
@@ -68,7 +68,7 @@ def find_similar_wines(df: pd.DataFrame, index: NearestNeighbors, embeddings: np
             continue
         results.append((position, distance))
 
-    results = results[:top_n]
+    results = results[:TOP_N]
     result_rows = []
     for position, distance in results:
         row = df.iloc[position]
