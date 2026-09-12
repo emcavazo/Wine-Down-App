@@ -46,7 +46,7 @@ def search_titles():
         return jsonify({"results": []})
 
     matches = df[df["title"].str.contains(query, case=False, na=False)]
-    titles = matches["title"].head(10).tolist()
+    titles = matches[["title","variety","description","price_tier","tannin_level","acidity_level","body_level","sweetness_level","flavor_tags"]].head(10).to_dict(orient="records")
 
     return jsonify({"results": titles})
 
@@ -56,4 +56,4 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug= True)

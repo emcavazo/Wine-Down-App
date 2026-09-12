@@ -79,6 +79,11 @@ def find_similar_wines(df: pd.DataFrame, index: NearestNeighbors, embeddings: np
             "variety": row["variety"],
             "similarity": round(similarity_percent, 1),
             "description": row["description"],
+             "tannin_level": row["tannin_level"],
+            "acidity_level": row["acidity_level"],
+            "body_level": row["body_level"],
+            "sweetness_level": row["sweetness_level"],
+            "flavor_tags": row["flavor_tags"],
         })
 
     return pd.DataFrame(result_rows)
