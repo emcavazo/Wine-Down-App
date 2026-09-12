@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wine Down!</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+        input { width: 70%; padding: 8px; }
+        button { padding: 8px 16px; }
+        .result { border-bottom: 1px solid #cca9a9; padding: 12px 0; }
+        .title { font-weight: bold; }
+        .similarity { color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>Wine Down!!</h1>
+    <input type="text" id="wineInput" placeholder="Search for a wine title...">
+
+    <div id="suggestions"></div>
+    <div id="results"></div>
+
+    <script>
+       let debounceTimer;
+
+    function showSuggestions() {
+        clearTimeout(debounceTimer) // typing delay
+
+        debounceTimer = setTimeout(async () => {
+            const query = document.getElementById("wineInput").value;
+            const suggestionsDiv = document.getElementById("suggestions");
+
+            if (!query) { //if they arent typing
+                suggestionsDiv.innerHTML = "";
+                return;
+            }
+
+            const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            suggestionsDiv.innerHTML = data.results.map(title => `
+                <div class="suggestion" onclick="selectWine('${title.replace(/'/g, "\\'")}')">${title}</div>
+            `).join("");
+        }, 300);
+    }
+
+    function selectWine(title) {
+        document.getElementById("wineInput").value = title;
+        document.getElementById("suggestions").innerHTML = "";
+        search(title);
+    }
+
+    async function search(titleOverride) {
+        const wineTitle = titleOverride || document.getElementById("wineInput").value;
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = "Searching...";
+
+        const response = await fetch(`/recommend?wine=${encodeURIComponent(wineTitle)}`);
+        const data = await response.json();
+
+        if (data.error) {
+            resultsDiv.innerHTML = `<p>${data.error}</p>`;
+            return;
+        }
+
+        resultsDiv.innerHTML = data.results.map(wine => `
+            <div class="result">
+                <div class="title">${wine.title}</div>
+                <div class="similarity">${wine.variety} — ${wine.similarity}% similar</div>
+                <div>${wine.description}</div>
+            </div>
+        `).join("");
+    }
+    </script>
+</body>
+</html>
