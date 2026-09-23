@@ -16,6 +16,7 @@ wines to customers based on their preferences and in turn, give them a better sc
 - [X] Build recommendation logic
 - [X] Evaluate results
 - [In progess] Build a simple interface + Make it easier to read
+- [In progess] Move data to PostGreSQL
 
 ## Data
 
