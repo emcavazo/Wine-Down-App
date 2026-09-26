@@ -4,16 +4,16 @@ import os
 # import everything directly from your existing script
 # (rename "winedown" to whatever your actual filename is, minus .py)
 from build_similarity_engine import (
-    load_data,
+    load_data_from_db,
     embeddpath,
     nni,
     find_similar_wines,
-    FEATURES_PATH,
 )
 
 app = Flask(__name__)
+print(__name__)
 
-df = load_data(FEATURES_PATH)
+df = load_data_from_db()
 embeddings = embeddpath(df)
 index = nni(embeddings)
 

@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import os
-
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
 from sentence_transformers import SentenceTransformer
 from sklearn.neighbors import NearestNeighbors
 
@@ -13,12 +14,30 @@ MODEL_NAME = "all-MiniLM-L6-v2"
 
 TOP_N = 3
 
+load_dotenv() # read .env and load vals into os.environ
+
 
 def load_data(path: str) -> pd.DataFrame:
     df = pd.read_csv(path)
     #print(f"Loaded {len(df):,} wines")
     return df
 
+
+####NEW ONE FROM MY psql!!!
+def load_data_from_db() -> pd.DataFrame:
+    db_url = os.environ.get(
+        "DATABASE_URL",
+        "postgresql+psycopg://wine:winepass@localhost:5432/winedown"
+    )
+    engine = create_engine(db_url)
+    query = """
+        SELECT title, variety, description, price_tier,
+               tannin_level, acidity_level, body_level, sweetness_level, flavor_tags
+        FROM wines
+        ORDER BY id
+    """
+    df = pd.read_sql(query, engine)
+    return df
 
 def save_embeddings(embeddings: np.ndarray, path: str):
     np.save(path, embeddings)
