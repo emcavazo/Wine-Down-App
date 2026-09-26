@@ -1,0 +1,4 @@
+.env
+error.txt
+wine_embeddings.npy
+__pycache__/
