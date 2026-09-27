@@ -9,14 +9,20 @@ wines to customers based on their preferences and in turn, give them a better sc
 
 ## Status
 
-🚧 Work in progress
+🚧 Work in progress 🚧 
 
 - [x] Load and clean the dataset
 - [x] Exploratory data analysis
 - [X] Build recommendation logic
 - [X] Evaluate results
-- [In progess] Build a simple interface + Make it easier to read
-- [In progess] Move data to PostGreSQL
+- [X] Containerize via Docker
+- [X] Build simple frontend
+- [X] Move data to PostgreSQL
+- [X] Configure Docker Compose
+- [X] Add PostgreSQL Health check
+- [X] Configure API startup dependency
+- [ ] Deploy app
+- [ ] Build a improved front end
 
 ## Data
 
@@ -26,17 +32,11 @@ Dataset: Kaggle Wine Reviews: https://www.kaggle.com/datasets/zynicide/wine-revi
   1. Clone the repo:
     git clone https://github.com/emcavazo/Wine-Down-App.git
     cd Wine-Down-App
-
-  3. Install dependencies:
-   pip install -r requirements.txt
-
-  4. Make sure `wine_features.csv` is present in the project root.
-   (First run will generate `wine_embeddings.npy` automatically — this will
-   take a few minutes)
-
+  2. Make sure wine_features.csv is present in the project root.
+     On the first run, wine_embeddings.npy will be generated automatically. This may take a few minutes.
+     
 ## Running with Docker 
-  docker build -t wine-api .
-  docker run -p 5000:5000 wine-api
+  docker compose up --build
 
 
 ## Usage
