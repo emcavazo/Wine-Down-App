@@ -9,5 +9,20 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data  # persists data between restarts
+    healthcheck: #dockers checks if sql is ready to connect
+      test: ["CMD-SHELL", "pg_isready -U wine -d winedown"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://wine:winepass@db:5432/winedown
+    depends_on:
+      db:
+        condition: service_healthy #until sql is ready dont start api
+    command: sh -c "python csvtosql.py && python app.py"
 volumes:
   pgdata:
