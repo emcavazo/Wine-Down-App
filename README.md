@@ -29,15 +29,8 @@ wines to customers based on their preferences and in turn, give them a better sc
 Dataset: Kaggle Wine Reviews: https://www.kaggle.com/datasets/zynicide/wine-reviews
 
 ## Setup
-  1. Clone the repo:
-    git clone https://github.com/emcavazo/Wine-Down-App.git
-    cd Wine-Down-App
-  2. Make sure wine_features.csv is present in the project root.
-     On the first run, wine_embeddings.npy will be generated automatically. This may take a few minutes.
-     
-## Running with Docker 
-  docker compose up --build
-
+1. Clone the repo: `git clone https://github.com/emcavazo/Wine-Down-App.git`
+2. Run `docker compose up --build`
 
 ## Usage
   1. Open http://localhost:5000 in your browser
