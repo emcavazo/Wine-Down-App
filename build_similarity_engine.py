@@ -9,6 +9,7 @@ from sklearn.neighbors import NearestNeighbors
 FEATURES_PATH = "wine_features.csv"
 EMBEDDINGS_PATH = "wine_embeddings.npy"  # .npy is numpy's format for saving arrays to disk
 
+
 # small + fast embedding model
 MODEL_NAME = "all-MiniLM-L6-v2"
 
@@ -40,7 +41,7 @@ def load_data_from_db() -> pd.DataFrame:
     return df
 
 def save_embeddings(embeddings: np.ndarray, path: str):
-    np.save(path, embeddings)
+    np.save(path, embeddings.astype(np.float16))  # Save as float16 to reduce file size
     #print(f"Saved embeddings to {path}")
 
 
@@ -49,7 +50,7 @@ def build_embeddings(df: pd.DataFrame) -> np.ndarray:
   
     descriptions = df["description"].tolist() #pandas series to python strings
 
-    embeddings = model.encode(descriptions, batch_size=64)
+    embeddings = model.encode(descriptions, batch_size=64,show_progress_bar=True) 
 
     #print(f"Embeddings dimensions: {embeddings.shape}")
    
@@ -57,7 +58,7 @@ def build_embeddings(df: pd.DataFrame) -> np.ndarray:
 
 
 def load_embeddings(path: str) -> np.ndarray:
-    return np.load(path)
+    return np.load(path).astype(np.float32)
 
 
 def nni(embeddings: np.ndarray) -> NearestNeighbors:
@@ -110,7 +111,13 @@ def find_similar_wines(df: pd.DataFrame, index: NearestNeighbors, embeddings: np
 
 def embeddpath(df:pd.DataFrame) -> np.ndarray:
     if os.path.exists(EMBEDDINGS_PATH):
-        return load_embeddings(EMBEDDINGS_PATH)
+        embeddings = load_embeddings(EMBEDDINGS_PATH)
+        
+        if len(embeddings) == len(df):
+            return embeddings
+        print(f"Embeddings file exists but has {len(embeddings)} rows, expected {len(df)}. Rebuilding embeddings.")
+
+       # return load_embeddings(EMBEDDINGS_PATH)
     embeddings = build_embeddings(df)
     save_embeddings(embeddings, EMBEDDINGS_PATH)
-    return embeddings
+    return embeddings.astype(np.float32)
